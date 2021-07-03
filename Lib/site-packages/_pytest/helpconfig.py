@@ -1,4 +1,4 @@
-""" version info, help messages, tracing configuration.  """
+"""Version info, help messages, tracing configuration."""
 import os
 import sys
 from argparse import Action
@@ -16,8 +16,9 @@ from _pytest.config.argparsing import Parser
 
 
 class HelpAction(Action):
-    """This is an argparse Action that will raise an exception in
-    order to skip the rest of the argument parsing when --help is passed.
+    """An argparse Action that will raise an exception in order to skip the
+    rest of the argument parsing when --help is passed.
+
     This prevents argparse from quitting due to missing required arguments
     when any are defined, for example by ``pytest_addoption``.
     This is similar to the way that the builtin argparse --help option is
@@ -37,7 +38,7 @@ class HelpAction(Action):
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.dest, self.const)
 
-        # We should only skip the rest of the parsing after preparse is done
+        # We should only skip the rest of the parsing after preparse is done.
         if getattr(parser._parser, "after_preparse", False):
             raise PrintHelp
 
@@ -96,7 +97,7 @@ def pytest_addoption(parser: Parser) -> None:
 @pytest.hookimpl(hookwrapper=True)
 def pytest_cmdline_parse():
     outcome = yield
-    config = outcome.get_result()  # type: Config
+    config: Config = outcome.get_result()
     if config.option.debug:
         path = os.path.abspath("pytestdebug.log")
         debugfile = open(path, "w")
@@ -136,7 +137,7 @@ def showversion(config: Config) -> None:
             for line in plugininfo:
                 sys.stderr.write(line + "\n")
     else:
-        sys.stderr.write("pytest {}\n".format(pytest.__version__))
+        sys.stderr.write(f"pytest {pytest.__version__}\n")
 
 
 def pytest_cmdline_main(config: Config) -> Optional[Union[int, ExitCode]]:
@@ -171,8 +172,8 @@ def showhelp(config: Config) -> None:
         if type is None:
             type = "string"
         if help is None:
-            raise TypeError("help argument cannot be None for {}".format(name))
-        spec = "{} ({}):".format(name, type)
+            raise TypeError(f"help argument cannot be None for {name}")
+        spec = f"{name} ({type}):"
         tw.write("  %s" % spec)
         spec_len = len(spec)
         if spec_len > (indent_len - 3):
@@ -207,7 +208,7 @@ def showhelp(config: Config) -> None:
         ("PYTEST_DEBUG", "set to enable debug tracing of pytest's internals"),
     ]
     for name, help in vars:
-        tw.line("  {:<24} {}".format(name, help))
+        tw.line(f"  {name:<24} {help}")
     tw.line()
     tw.line()
 
@@ -234,7 +235,7 @@ def getpluginversioninfo(config: Config) -> List[str]:
         lines.append("setuptools registered plugins:")
         for plugin, dist in plugininfo:
             loc = getattr(plugin, "__file__", repr(plugin))
-            content = "{}-{} at {}".format(dist.project_name, dist.version, loc)
+            content = f"{dist.project_name}-{dist.version} at {loc}"
             lines.append("  " + content)
     return lines
 
@@ -242,9 +243,7 @@ def getpluginversioninfo(config: Config) -> List[str]:
 def pytest_report_header(config: Config) -> List[str]:
     lines = []
     if config.option.debug or config.option.traceconfig:
-        lines.append(
-            "using: pytest-{} pylib-{}".format(pytest.__version__, py.__version__)
-        )
+        lines.append(f"using: pytest-{pytest.__version__} pylib-{py.__version__}")
 
         verinfo = getpluginversioninfo(config)
         if verinfo:
@@ -258,5 +257,5 @@ def pytest_report_header(config: Config) -> List[str]:
                 r = plugin.__file__
             else:
                 r = repr(plugin)
-            lines.append("    {:<20}: {}".format(name, r))
+            lines.append(f"    {name:<20}: {r}")
     return lines
